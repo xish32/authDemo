@@ -58,6 +58,43 @@
 
 
 ## 接口设计
++ 创建用户addUser，接口原型addUser(String userName, String password)
+  - userName, 指代用户名
+  - password, 指代密码
+  - 异常情况：1. 用户已存在
++ 删除用户delUser，接口原型delUser(String userName)
+  - userName, 指代用户名
+  - 异常情况：1. 用户不存在
++ 创建角色addRole，接口原型addRole(String roleName)
+  - roleName，指代角色名
+  - 异常情况：1. 角色已存在
++ 删除角色delRole，接口原型delRole(String roleName)
+  - roleName，指代角色名
+  - 异常情况：1. 角色不存在
++ 给用户授角色grantRoleToUser，接口原型grantRoleTouser(String userName, String roleName)
+  - userName, 指代用户名
+  - roleName，指代角色名
+  - 如果用户已经拥有该角色的信息，需要正常返回
+  - 异常情况：1. 用户不存在；2. 角色不存在
++ 登录login，接口原型login(String userName, String password)
+  - userName，指代用户名
+  - password，指代密码
+  - 返回一个设定好的authToken，暂定UUID
+  - 异常情况：1. 用户名或密码不正确
++ 登出logout，接口原型logout(String authToken);
+  - authToken，指代token的名字
+  - 异常情况：token不正确
+  - returns nothing, the token is no longer valid after the call.  Handles correctly the case of invalid token given as input
++ 验证角色checkRole，接口原型checkRole(String authToken，String roleName)
+  - authToken，指代token
+  - roleName，指代角色名
+  - 返回一个true或false的值
+  - returns true if the user, identified by the token, belongs to the role, false otherwise; error if token is invalid expired etc.
++ 查所有角色getUserRole，接口原型getUserRole(String authToken)
+  - authToken，指代token
+  - 返回该用户所有的角色信息
+  - 异常情况：1. token异常
+  - returns all roles for the user, error if token is invalid.
 
 
 
