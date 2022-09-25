@@ -22,10 +22,10 @@
 | 字段名 | 类型 | 说明 |  
 | ------ | ------ | ------ |  
 | name | String | **用户名（登录名），key** |  
-| id | Long | 用户id |  
+| id | long | 用户id |  
 | password | String | 密码（加密形式） |  
 | lastAuthTime | Date | 上次授权时间 |  
-| token | String | 状态授权令牌 |  
+| authToken | String | 状态授权令牌 |  
 | updateTime | Date | 更新时间 |  
 
 + 用户实体存储在userMap中，key为name角色名，value为User这个对象实例  
@@ -38,7 +38,7 @@
 | 字段名 | 类型 | 说明 |  
 | ------ | ------ | ------ |  
 | name | String | **角色名，key** |  
-| id | Long | 角色ID |  
+| id | long | 角色id |  
 | updateTime | Date | 更新时间 |  
 
 + 角色实体存储在roleMap中，key为name角色名，value为Role这个对象实例  
@@ -104,6 +104,7 @@
 
 
 ## 测试场景
-1. 添加用户->用户登录->
+1. 基本逻辑验证
++ 添加用户->添加角色->用户角色授权->用户登录->用户退登
 2. 角色的添加和删除
 3. 
