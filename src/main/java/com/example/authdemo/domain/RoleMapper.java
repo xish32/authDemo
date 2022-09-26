@@ -24,7 +24,7 @@ public class RoleMapper {
     }
 
     /**
-     * 向数据中插入一条user的信息
+     * 向数据中插入一条角色信息
      * @Param roleInfo -- 待插入的元素
      * @Return 成功插入的记录数，正常应该为1
      * */
@@ -40,8 +40,8 @@ public class RoleMapper {
     }
 
     /**
-     * 从库中删除对应userName的信息
-     * @Param roleName -- 用户名
+     * 从库中删除对应roleName的角色
+     * @Param roleName -- 角色名
      * @Return 成功删除的记录数，正常应该是1
      * */
     public int delete(String roleName) {
@@ -53,9 +53,9 @@ public class RoleMapper {
     }
 
     /**
-     * 根据userName查找容器内的User对象
-     * @param roleName -- 用户名
-     * @return 用户对象，没有则返回null
+     * 根据roleName查找容器内的用户对象
+     * @param roleName -- 角色名
+     * @return 角色对象，没有则返回null
      */
     public Role get(String roleName) {
         return dataMap.get(roleName);

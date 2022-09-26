@@ -30,6 +30,7 @@
 
 + 用户实体存储在userMap中，key为name角色名，value为User这个对象实例  
 + 需要有一个atomicLong当做自增序列对象来给新增用户授予ID  
++ 调用类UserMapper，单例
 + 如果后续需要持久化，可以用id字段作为主键  
 
 
@@ -43,6 +44,7 @@
 
 + 角色实体存储在roleMap中，key为name角色名，value为Role这个对象实例  
 + 需要有一个atomicLong当做自增序列对象来给新增用户授予ID  
++ 调用类RoleMapper，单例
 + 如果后续需要持久化，可以用id字段作为主键  
 
 3. 用户-角色之间的关系  
@@ -53,6 +55,8 @@
 | userRoleMap | Map<String, Set<Long>> | 该用户共有哪些角色ID，key--用户名，value--角色集合 |  
 | roleUserMap | Map<String, Set<Long>> | 该角色下有哪些用户ID，key--角色名，value--用户集合 |  
 
++ 两者实际上是一体的，我计划用一个对象来实现它
++ 调用类UserRoleMapper，单例
 + 补充：可以考虑延迟加载
 
 
@@ -100,7 +104,7 @@
 
 
 ## 调用逻辑设计  
-
+主要分三层
 
 
 ## 测试场景

@@ -14,6 +14,7 @@ public class RoleMapperTest {
         assertEquals(0, roleMapper.insert(new Role(null)));
         assertEquals(0, roleMapper.insert(null));
         assertEquals("admin", roleMapper.get("admin").getName());
+        assertEquals(1L, roleMapper.get("admin").getId());
         assertEquals(0, roleMapper.delete(null));
         assertEquals(0, roleMapper.delete("client"));
         assertEquals(1, roleMapper.delete("admin"));

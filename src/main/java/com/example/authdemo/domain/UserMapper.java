@@ -25,8 +25,8 @@ public class UserMapper {
     }
 
     /**
-     * 向数据中插入一条user的信息
-     * @Param userInfo -- 待插入的元素
+     * 向数据中插入一条用户的信息
+     * @Param userInfo -- 待插入的用户
      * @Return 成功插入的记录数，正常应该为1
      * */
     public int insert(User userInfo) {
@@ -54,7 +54,7 @@ public class UserMapper {
     }
 
     /**
-     * 根据userName查找容器内的User对象
+     * 根据userName查找容器内的用户对象
      * @param userName -- 用户名
      * @return 用户对象，没有则返回null
      */
