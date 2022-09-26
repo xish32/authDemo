@@ -32,6 +32,14 @@
 + 需要有一个atomicLong当做自增序列对象来给新增用户授予ID  
 + 调用类UserMapper，单例
 + 如果后续需要持久化，可以用id字段作为主键  
++ 根据现有需求接口，我们还需要设法建立一个Token和用户的关系，
+
+| 容器名 | 类型 | 说明 |  
+| ------ | ------ | ------ |  
+| dataMap | Map<String, User> | 存储name对应的用户信息，key--用户名，value--对应的用户信息 |  
+| validTokenMap | Map<String, User> | 当前生效的token信息，key--token，value--对应的用户信息 |  
+  
+
 
 
 2. 角色实体Role
@@ -47,25 +55,36 @@
 + 调用类RoleMapper，单例
 + 如果后续需要持久化，可以用id字段作为主键  
 
+| 容器名 | 类型 | 说明 |  
+| ------ | ------ | ------ |  
+| dataMap | Map<String, Role> | 存储name对应的角色信息，key--角色名，value--对应的角色信息 |  
+
+
 3. 用户-角色之间的关系  
-+ 角色和用户之间是多对多的关系，因此需要有两个map来维护这层关系。
++ 角色和用户之间是多对多的关系，因此构成了两层关系。  
+  - 用户对角色  
+  - 角色对用户  
++ 根据现有的需求来看，角色对用户的关系可以不维护  
+  - 删除角色的时候，可以延迟删除对应用户中的角色信息  
+  - 每次查询用户角色的时候，去roleMap中做一下查询即可  
 
 | 容器名 | 类型 | 说明 |  
 | ------ | ------ | ------ |  
 | userRoleMap | Map<String, Set<Long>> | 该用户共有哪些角色ID，key--用户名，value--角色集合 |  
-| roleUserMap | Map<String, Set<Long>> | 该角色下有哪些用户ID，key--角色名，value--用户集合 |  
 
-+ 两者实际上是一体的，我计划用一个对象来实现它
 + 调用类UserRoleMapper，单例
-+ 补充：可以考虑延迟加载
+
+
+
 
 
 
 ## 接口设计
++ 对外层接口全部在接口authService中定义，有一个authServiceImpl的实现类拉实现
 + 创建用户addUser，接口原型addUser(String userName, String password)
   - userName, 指代用户名
   - password, 指代密码
-  - 异常情况：1. 用户已存在
+  - 异常情况：1. 用户已存在；2. 其他异常情况
 + 删除用户delUser，接口原型delUser(String userName)
   - userName, 指代用户名
   - 异常情况：1. 用户不存在
@@ -80,12 +99,12 @@
   - roleName，指代角色名
   - 如果用户已经拥有该角色的信息，需要正常返回
   - 异常情况：1. 用户不存在；2. 角色不存在
-+ 登录login，接口原型login(String userName, String password)
++ 授权authenticate，接口原型authenticate(String userName, String password)
   - userName，指代用户名
   - password，指代密码
   - 返回一个设定好的authToken，暂定UUID
   - 异常情况：1. 用户名或密码不正确
-+ 登出logout，接口原型logout(String authToken);
++ 取消授权invalidate，接口原型invalidate(String authToken);
   - authToken，指代token的名字
   - 异常情况：token不正确
   - returns nothing, the token is no longer valid after the call.  Handles correctly the case of invalid token given as input
