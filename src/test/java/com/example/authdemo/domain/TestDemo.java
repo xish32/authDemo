@@ -3,26 +3,43 @@ package com.example.authdemo.domain;
 import com.example.authdemo.entity.User;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
 public class TestDemo {
     @Test
     public void testAdd() {
+
+        Set<Long> testSet = new HashSet<>();
+        testSet.add(1L);
+        testSet.add(2L);
+        testSet.add(3L);
+
+        List<Long> newList = new ArrayList<>(testSet);
+        newList.set(2,4L);
+        newList = null;
+        for (Long num : newList)
+            System.out.println(num);
+        System.out.println("========");
+
+        for (Long num : testSet)
+            System.out.println(num);
+
+
         User userInfo = new User("233");
         HashMap<String, Set<Long>> res1 = new HashMap<>(32);
         Long id = 456L;
         res1.compute(userInfo.getName(), (k, v) -> {
-//            if (v == null) {
-//                v = new HashSet<>();
-//            }
+            if (v == null) {
+                v = new HashSet<>();
+            }
 
-            v.add(userInfo.getId());
             return v;
         });
         System.out.println(res1);
+
+
 
     }
 

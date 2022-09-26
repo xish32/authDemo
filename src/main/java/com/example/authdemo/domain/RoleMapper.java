@@ -2,6 +2,8 @@ package com.example.authdemo.domain;
 
 import com.example.authdemo.entity.Role;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,13 +49,11 @@ public class RoleMapper {
     public int delete(String roleName) {
         if (null == roleName) return 0;
 
-        Role delUser = dataMap.remove(roleName);
-        if (delUser == null) return 0;
-        return 1;
+        return dataMap.remove(roleName) != null ? 1 : 0;
     }
 
     /**
-     * 根据roleName查找容器内的用户对象
+     * 根据roleName查找容器内的角色对象
      * @param roleName -- 角色名
      * @return 角色对象，没有则返回null
      */
@@ -61,4 +61,13 @@ public class RoleMapper {
         return dataMap.get(roleName);
     }
 
+    /***
+     * 根据id清单获取对应的角色对象列表
+     * @param ids
+     * @return 角色对象列表，没有则返回一个空列表
+     */
+    public List<Role> getRoles(List<Long> ids) {
+        List<Role> roleList = new ArrayList<>();
+        return roleList;
+    }
 }

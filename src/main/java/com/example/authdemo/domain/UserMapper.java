@@ -48,9 +48,7 @@ public class UserMapper {
     public int delete(String userName) {
         if (null == userName) return 0;
 
-        User delUser = dataMap.remove(userName);
-        if (delUser == null) return 0;
-        return 1;
+        return dataMap.remove(userName) != null ? 1 : 0;
     }
 
     /**

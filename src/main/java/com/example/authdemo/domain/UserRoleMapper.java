@@ -2,9 +2,7 @@ package com.example.authdemo.domain;
 
 import com.example.authdemo.entity.User;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -60,6 +58,17 @@ public class UserRoleMapper {
         return roleIdSet.remove(roleId) ? 1 : 0;
     }
 
+    /***
+     * 删除指定的用户关系
+     * @param userName -- 用户名
+     * @return 成功删除的记录数
+     */
+    public int delUser(String userName) {
+        if (null == userName) return 0;
+        return userRoleMap.remove(userName) != null ? 1 : 0;
+    }
+
+
     /**
      * 查当前用户是否有对应的角色
      * @param userName 用户名
@@ -71,6 +80,17 @@ public class UserRoleMapper {
         Set<Long> roleIdSet = userRoleMap.get(userName);
         if (null == roleIdSet) return false;
         return roleIdSet.contains(roleId);
+    }
+
+    /**
+     * 查指定用户的所有角色
+     * @param userName 用户名
+     * @return 一个List，里面存储
+     */
+    public List<Long> getAllRolesFromUser(String userName) {
+        if (null == userName) return new ArrayList<>();
+        Set<Long> roleIdSet = userRoleMap.get(userName);
+        return new ArrayList<>(roleIdSet);
     }
 
 }
