@@ -1,17 +1,21 @@
 package com.example.authdemo.entity;
 
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 用户类
  * 存储用户相关信息
  */
 public class User {
+    /** 下一个ID，给ID生成用 */
+    private AtomicLong nextId = new AtomicLong(1);
+
     /** 用户名（登录名），key */
     private String name;
 
     /** 用户id */
-    private long id;
+    private final long id;
 
     /** 密码（加密形式） */
     private String password;
@@ -25,6 +29,17 @@ public class User {
     /** 更新时间 */
     private Date updateTime;
 
+    public User(String name) {
+        this.name = name;
+        this.id = nextId.getAndIncrement();
+        //密码
+        this.password = null;
+        this.lastAuthTime = new Date();
+        this.authToken = null;
+        this.updateTime = new Date(this.lastAuthTime.getTime());
+    }
+
+
     public String getName() {
         return name;
     }
@@ -35,10 +50,6 @@ public class User {
 
     public long getId() {
         return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getPassword() {
@@ -72,4 +83,6 @@ public class User {
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
     }
+
+
 }

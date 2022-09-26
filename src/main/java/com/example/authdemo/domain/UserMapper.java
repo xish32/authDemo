@@ -14,19 +14,52 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserMapper {
     Map<String, User> dataMap;
 
+    private static UserMapper userMapper = new UserMapper();
+
     private UserMapper() {
         dataMap = new ConcurrentHashMap<>();
     }
 
-    /**  */
+    public static UserMapper getInstance() {
+        return userMapper;
+    }
+
+    /**
+     * 向数据中插入一条user的信息
+     * @Param userInfo -- 待插入的元素
+     * @Return 成功插入的记录数，正常应该为1
+     * */
     public int insert(User userInfo) {
-        return 0;
+        if (null == userInfo) return 0;
+        if (null == userInfo.getName()) return 0;
+
+        if (dataMap.containsKey(userInfo.getName())) {
+            return 0;
+        }
+        dataMap.put(userInfo.getName(), userInfo);
+        return 1;
     }
 
-    /**  */
+    /**
+     * 从库中删除对应userName的信息
+     * @Param userName -- 用户名
+     * @Return 成功删除的记录数，正常应该是1
+     * */
     public int delete(String userName) {
-        return 0;
+        if (null == userName) return 0;
+
+        User delUser = dataMap.remove(userName);
+        if (delUser == null) return 0;
+        return 1;
     }
 
+    /**
+     * 根据userName查找容器内的User对象
+     * @param userName -- 用户名
+     * @return 用户对象，没有则返回null
+     */
+    public User get(String userName) {
+        return dataMap.get(userName);
+    }
 
 }
