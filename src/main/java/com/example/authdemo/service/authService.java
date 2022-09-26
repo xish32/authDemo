@@ -7,14 +7,21 @@ import com.example.authdemo.domain.UserRoleMapper;
 import com.example.authdemo.entity.Role;
 import com.example.authdemo.entity.User;
 import com.example.authdemo.exception.AuthException;
+import com.example.authdemo.util.DateUtil;
 import com.example.authdemo.util.DesUtil;
+import com.example.authdemo.util.StringUtil;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class AuthService {
 
     private final static String PASSWORD_KEY = "20220926";
 
+    private final static int DELAY_TIMES = 2;
+    private final static int DELAY_TIMEUNIT = Calendar.HOUR_OF_DAY;
 
 
     private RoleMapper roleMapper;
@@ -143,8 +150,29 @@ public class AuthService {
      * @param roleName 角色名
      * @return 处理结果信息authResult
      */
-    public AuthResult grantRoleTouser(String userName, String roleName) {
-        return null;
+    public AuthResult grantRoleToUser(String userName, String roleName) {
+        if ((null == userName) || (null == roleName)) return AuthResult.PARAMETER_NULL;
+
+        try {
+            //先查角色是否存在
+            Role newRole = roleMapper.get(roleName);
+            if (null == newRole) {
+                return AuthResult.ROLE_NOTEXIST;
+            }
+
+            long roleId = newRole.getId();
+
+            //先检查该用户-角色信息是否存在
+            // 已经存在的，要按照成功来计算
+            if (userRoleMapper.hasRoleFromUser(userName, roleId))
+                return AuthResult.SUCCESS;
+
+            userRoleMapper.addRoleToUser(userName, roleId);
+            return AuthResult.SUCCESS;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return AuthResult.UNKONWN_ERROR;
+        }
     }
 
 
@@ -155,8 +183,31 @@ public class AuthService {
      * @return 返回一个设定好的authToken，暂定UUID
      * 可能会抛出异常
      */
-    public String authenticate(String userName, String password) {
-        return null;
+    public String authenticate(String userName, String password) throws AuthException{
+        if (null == userName)
+            throw new AuthException(AuthResult.PARAMETER_NULL, null);
+
+        try {
+            //检查用户是否存在，密码是否正确
+            User curUser = userMapper.get(userName);
+            if (null == curUser)
+                throw new AuthException(AuthResult.USER_NOTEXIST, null);
+
+            String decPassword = DesUtil.decrypt(PASSWORD_KEY, curUser.getPassword());
+            if (!StringUtil.equals(decPassword, password)) {
+                throw new AuthException(AuthResult.INVALID_PASSWORD, null);
+            }
+
+            //生成新的token
+            String newToken = java.util.UUID.randomUUID().toString();
+            Date updateTime = new Date();
+            Date expireTime = DateUtil.getAddTime(updateTime, DELAY_TIMES, DELAY_TIMEUNIT);
+            userMapper.addToken(userName, newToken, updateTime, expireTime);
+            return newToken;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new AuthException(AuthResult.UNKONWN_ERROR, ex);
+        }
     }
 
 
@@ -165,7 +216,17 @@ public class AuthService {
      * @param authToken token的名字
      */
     public void invalidate(String authToken) {
+        if (null == authToken) return ;
 
+        try {
+            //检查用户是否存在，密码是否正确
+            User curUser = userMapper.getUserByToken(authToken);
+            if (null == curUser) return;
+
+            userMapper.addToken(curUser.getName(), null, new Date(), null);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 

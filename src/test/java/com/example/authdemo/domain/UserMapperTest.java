@@ -25,12 +25,15 @@ public class UserMapperTest {
     public void testToken() {
         UserMapper userMapper = UserMapper.getInstance();
         assertEquals(1, userMapper.insert(new User("enterprise")));
-        assertEquals(1, userMapper.addToken("enterprise", "123", new Date()));
+        assertEquals(1, userMapper.addToken("enterprise", "123", new Date(), new Date()));
         assertEquals("123", userMapper.get("enterprise").getAuthToken());
-        assertEquals(1, userMapper.addToken("enterprise", "345", new Date()));
+        assertEquals(1, userMapper.addToken("enterprise", "345", new Date(), new Date()));
         assertEquals("345", userMapper.get("enterprise").getAuthToken());
         assertEquals(null, userMapper.getUserByToken("123"));
         assertEquals("enterprise", userMapper.getUserByToken("345").getName());
+
+        assertEquals(1, userMapper.addToken("enterprise", null, new Date(), new Date()));
+        assertEquals(null, userMapper.getUserByToken("345"));
     }
 
 }

@@ -11,6 +11,9 @@ public class TestDemo {
     @Test
     public void testAdd() {
 
+        for (int i = 0 ; i < 10 ; i++)
+            System.out.println(UUID.randomUUID().toString());
+
         Set<Long> testSet = new HashSet<>();
         testSet.add(1L);
         testSet.add(2L);

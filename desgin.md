@@ -94,7 +94,7 @@
 + 删除角色delRole，接口原型delRole(String roleName)
   - roleName，指代角色名
   - 异常情况：1. 角色不存在
-+ 给用户授角色grantRoleToUser，接口原型grantRoleTouser(String userName, String roleName)
++ 给用户授角色grantRoleToUser，接口原型grantRoleToUser(String userName, String roleName)
   - userName, 指代用户名
   - roleName，指代角色名
   - 如果用户已经拥有该角色的信息，需要正常返回

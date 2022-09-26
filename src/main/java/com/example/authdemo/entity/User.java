@@ -21,7 +21,7 @@ public class User {
     private String password;
 
     /** 上次授权时间 */
-    private Date lastAuthTime;
+    private Date tokenExpireTime;
 
     /** 状态授权令牌 */
     private String authToken;
@@ -34,9 +34,9 @@ public class User {
         this.id = nextId.getAndIncrement();
         //密码
         this.password = null;
-        this.lastAuthTime = new Date();
+        this.tokenExpireTime = null;
         this.authToken = null;
-        this.updateTime = new Date(this.lastAuthTime.getTime());
+        this.updateTime = new Date();
     }
 
 
@@ -60,12 +60,12 @@ public class User {
         this.password = password;
     }
 
-    public Date getLastAuthTime() {
-        return lastAuthTime;
+    public Date getTokenExpireTime() {
+        return tokenExpireTime;
     }
 
-    public void setLastAuthTime(Date lastAuthTime) {
-        this.lastAuthTime = lastAuthTime;
+    public void setTokenExpireTime(Date tokenExpireTime) {
+        this.tokenExpireTime = tokenExpireTime;
     }
 
     public String getAuthToken() {

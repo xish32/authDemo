@@ -1,5 +1,7 @@
 package com.example.authdemo.exception;
 
+import com.example.authdemo.constant.AuthResult;
+
 public class AuthException extends Exception {
     /** 异常码 */
     private String code;
@@ -13,6 +15,13 @@ public class AuthException extends Exception {
         this.msg = msg;
         this.originException = ex;
     }
+
+    public AuthException(AuthResult result, Exception ex) {
+        this.code = result.getRetCode();
+        this.msg = result.getRetMsg();
+        this.originException = ex;
+    }
+
 
     public String getCode() {
         return code;

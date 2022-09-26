@@ -80,14 +80,17 @@ public class UserMapper {
      * 给指定用户增加token
      * @param userName 用户名
      * @param token token信息，如果为空，相当于取消
-     * @param authDate 授权时间，如果传空值，则相当于取消
+     * @param updateTime 更新时间
+     * @param expireTime 授权到期时间，如果传空值，则相当于取消
      * @return token更新是否成功，0--不成功，1--成功
      */
-    public int addToken(String userName, String token, Date authDate) {
+    public int addToken(String userName, String token, Date updateTime, Date expireTime) {
         if (null == userName) return 0;
 
         User user = dataMap.get(userName);
         if (null == user) return 0;
+
+        user.setUpdateTime(updateTime);
 
         synchronized(user) {
             //后续的操作涉及到对validTokenMap和dataMap中同一个用户信息的操作
@@ -100,11 +103,15 @@ public class UserMapper {
             if (null != user.getAuthToken())
                 validTokenMap.remove(user.getAuthToken());
             //更新新的token
-            if (null != token)
+            if (null != token) {
                 validTokenMap.put(token, user);
+                user.setTokenExpireTime(expireTime);
+            } else {
+                user.setTokenExpireTime(null);
+            }
+
             //更新新的Token和时间
             user.setAuthToken(token);
-            user.setLastAuthTime(authDate);
         }
 
         return 1;
