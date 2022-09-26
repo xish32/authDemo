@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class User {
     /** 下一个ID，给ID生成用 */
-    private AtomicLong nextId = new AtomicLong(1);
+    private static AtomicLong nextId = new AtomicLong(1);
 
     /** 用户名（登录名），key */
     private String name;

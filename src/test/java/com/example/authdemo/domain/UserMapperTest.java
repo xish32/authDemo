@@ -12,10 +12,12 @@ public class UserMapperTest {
     public void testUserMapper() {
         UserMapper userMapper = UserMapper.getInstance();
         assertEquals(1, userMapper.insert(new User("enterprise")));
+        assertEquals(1, userMapper.insert(new User("ranger")));
         assertEquals(0, userMapper.insert(new User(null)));
         assertEquals(0, userMapper.insert(null));
         assertEquals("enterprise", userMapper.get("enterprise").getName());
         assertEquals(1L, userMapper.get("enterprise").getId());
+        assertEquals(2L, userMapper.get("ranger").getId());
         assertEquals(0, userMapper.delete(null));
         assertEquals(0, userMapper.delete("yorktown"));
         assertEquals(1, userMapper.delete("enterprise"));

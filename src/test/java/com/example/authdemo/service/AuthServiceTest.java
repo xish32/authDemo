@@ -64,6 +64,7 @@ public class AuthServiceTest {
         assertEquals(AuthResult.SUCCESS, authService.addUser("enterprise", "CV-6"));
         assertEquals(AuthResult.SUCCESS, authService.addUser("yorktown", "CV-5"));
         assertEquals(AuthResult.SUCCESS, authService.addRole("admin"));
+        assertEquals(AuthResult.SUCCESS, authService.addRole("officer"));
         //加角色
         assertEquals(AuthResult.SUCCESS, authService.grantRoleToUser("enterprise", "admin"));
 
@@ -77,6 +78,12 @@ public class AuthServiceTest {
         try {
             String token = authService.authenticate("enterprise", "CV-6");
             assertEquals(true, authService.checkRole(token, "admin"));
+
+            assertEquals(false, authService.checkRole(token, "officer"));
+
+            //不存在的角色也属于false
+            assertEquals(false, authService.checkRole(token, "taskforce"));
+
         } catch (AuthException e) {
             fail();
         }

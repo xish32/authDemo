@@ -15,7 +15,7 @@ import java.util.*;
 
 public class AuthService {
 
-    private final static String PASSWORD_KEY = "20220926";
+    private final static String ENCRYPT_KEY = "20220926";
 
     private final static int DELAY_TIMES = 2;
     private final static int DELAY_TIMEUNIT = Calendar.HOUR_OF_DAY;
@@ -59,7 +59,7 @@ public class AuthService {
         //构建新用户
         try {
             User newUser = new User(userName);
-            newUser.setPassword(DesUtil.encrypt(PASSWORD_KEY, password));
+            newUser.setPassword(DesUtil.encrypt(ENCRYPT_KEY, password));
 
             userMapper.insert(newUser);
             return AuthResult.SUCCESS;
@@ -197,7 +197,7 @@ public class AuthService {
         if (null == curUser)
             throw new AuthException(AuthResult.INVALID_USERNAME_PASSWORD, null);
 
-        String decPassword = DesUtil.decrypt(PASSWORD_KEY, curUser.getPassword());
+        String decPassword = DesUtil.decrypt(ENCRYPT_KEY, curUser.getPassword());
         if (!StringUtil.equals(decPassword, password)) {
             throw new AuthException(AuthResult.INVALID_USERNAME_PASSWORD, null);
         }
@@ -240,7 +240,7 @@ public class AuthService {
      * 验证角色，验证指定token对应的角色是否
      * @param authToken token的名字
      * @param roleName 角色的名字
-     * @return true--token对应的用户有这个角色，false--token对应的用户没有这个角色
+     * @return true--token对应的用户有这个角色，false--token对应的用户没有这个角色，角色不存在等
      * @throws AuthException 异常信息，token已经失效的也会在这里抛出异常
      */
     public boolean checkRole(String authToken, String roleName) throws AuthException {
@@ -249,7 +249,7 @@ public class AuthService {
 
         // 检查角色是否存在
         Role curRole = roleMapper.get(roleName);
-        if (null == curRole) throw new AuthException(AuthResult.ROLE_NOTEXIST, null);
+        if (null == curRole) return false;
 
         //检查用户是否存在
         User curUser = checkTokenUser(authToken);
