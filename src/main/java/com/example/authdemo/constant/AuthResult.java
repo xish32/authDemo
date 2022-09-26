@@ -10,6 +10,7 @@ public enum AuthResult {
     ROLE_NOTEXIST("000002", "角色不存在"),
     INVALID_PASSWORD("000003", "密码不正确"),
     INVALID_TOKEN("000004", "TOKEN不正确或已过期"),
+    PARAMETER_NULL("000005", "输入参数为空"),
 
     USER_ALREADY_EXIST("000011", "用户已存在"),
     ROLE_ALREADY_EXIST("000012", "角色已存在"),

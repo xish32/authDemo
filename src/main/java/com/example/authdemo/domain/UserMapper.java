@@ -58,7 +58,9 @@ public class UserMapper {
         User user = dataMap.get(userName);
         if (null != user) {
             synchronized(user) {
-                validTokenMap.remove(user.getAuthToken());
+                if (null != user.getAuthToken()) {
+                    validTokenMap.remove(user.getAuthToken());
+                }
             }
         }
 

@@ -4,14 +4,18 @@ import com.example.authdemo.constant.AuthResult;
 import com.example.authdemo.domain.RoleMapper;
 import com.example.authdemo.domain.UserMapper;
 import com.example.authdemo.domain.UserRoleMapper;
+import com.example.authdemo.entity.Role;
+import com.example.authdemo.entity.User;
 import com.example.authdemo.exception.AuthException;
+import com.example.authdemo.util.DesUtil;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class AuthService {
 
     private final static String PASSWORD_KEY = "20220926";
+
+
 
     private RoleMapper roleMapper;
 
@@ -35,11 +39,30 @@ public class AuthService {
     /**
      * 创建用户addUser
      * @param userName -- 用户名
-     * @param password -- 密码
+     * @param password -- 密码，允许密码为空
      * @Return 处理结果信息authResult
      */
     public AuthResult addUser(String userName, String password) {
-        return null;
+        if (null == userName) return AuthResult.PARAMETER_NULL;
+
+        //查是否已存在
+        User existUser = userMapper.get(userName);
+        if (null != existUser) {
+            //已存在
+            return AuthResult.USER_ALREADY_EXIST;
+        }
+
+        //构建新用户
+        try {
+            User newUser = new User(userName);
+            newUser.setPassword(DesUtil.encrypt(PASSWORD_KEY, password));
+
+            userMapper.insert(newUser);
+            return AuthResult.SUCCESS;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return AuthResult.UNKONWN_ERROR;
+        }
     }
 
 
@@ -49,7 +72,18 @@ public class AuthService {
      * @return 处理结果信息authResult
      */
     public AuthResult delUser(String userName) {
-        return null;
+        if (null == userName) return AuthResult.PARAMETER_NULL;
+
+        try {
+            int res = userMapper.delete(userName);
+            if (res == 1) {
+                return AuthResult.SUCCESS;
+            }
+            return AuthResult.USER_NOTEXIST;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return AuthResult.UNKONWN_ERROR;
+        }
     }
 
 
@@ -59,7 +93,25 @@ public class AuthService {
      * @return 处理结果信息authResult
      */
     public AuthResult addRole(String roleName) {
-        return null;
+        if (null == roleName) return AuthResult.PARAMETER_NULL;
+
+        //查是否已存在
+        Role existRole = roleMapper.get(roleName);
+        if (null != existRole) {
+            //已存在
+            return AuthResult.ROLE_ALREADY_EXIST;
+        }
+
+        //构建新用户
+        try {
+            Role newRole = new Role(roleName);
+
+            roleMapper.insert(newRole);
+            return AuthResult.SUCCESS;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return AuthResult.UNKONWN_ERROR;
+        }
     }
 
 
@@ -69,7 +121,18 @@ public class AuthService {
      * @return 处理结果信息authResult
      */
     public AuthResult delRole(String roleName) {
-        return null;
+        if (null == roleName) return AuthResult.PARAMETER_NULL;
+
+        try {
+            int res = roleMapper.delete(roleName);
+            if (res == 1) {
+                return AuthResult.SUCCESS;
+            }
+            return AuthResult.ROLE_NOTEXIST;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return AuthResult.UNKONWN_ERROR;
+        }
     }
 
 
