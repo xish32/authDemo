@@ -1,7 +1,5 @@
 package com.example.authdemo.domain;
 
-import com.example.authdemo.entity.User;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,13 +33,16 @@ public class UserRoleMapper {
      * */
     public int addRoleToUser(String userName, long roleId) {
         if (null == userName) return 0;
-        userRoleMap.compute(userName, (key, value) -> {
-            if (value == null) {
-                value = new HashSet<>();
-            }
-            value.add(roleId);
-            return value;
-        });
+        Set<Long> roleIdSet = userRoleMap.get(userName);
+        if (null == roleIdSet) {
+            roleIdSet = new HashSet<>();
+            userRoleMap.put(userName, roleIdSet);
+        }
+
+        if (roleIdSet.contains(roleId)) {
+            return 0;
+        }
+        roleIdSet.add(roleId);
         return 1;
     }
 
@@ -56,6 +57,25 @@ public class UserRoleMapper {
         Set<Long> roleIdSet = userRoleMap.get(userName);
         if (null == roleIdSet) return 0;
         return roleIdSet.remove(roleId) ? 1 : 0;
+    }
+
+    /**
+     * 删除某用户的多个角色
+     * @param userName -- 用户名
+     * @param roleIdList -- 角色ID清单
+     * @return 成功删除的记录数
+     */
+    public int delMultiRolesFromUser(String userName, List<Long> roleIdList) {
+        if (null == userName) return 0;
+        if (null == roleIdList) return 0;
+
+        Set<Long> roleIdSet = userRoleMap.get(userName);
+        if (null == roleIdSet) return 0;
+        int count = 0;
+        for (Long roleId : roleIdList) {
+            count = count + (roleIdSet.remove(roleId) ? 1 : 0);
+        }
+        return count;
     }
 
     /***
@@ -90,7 +110,7 @@ public class UserRoleMapper {
     public List<Long> getAllRolesFromUser(String userName) {
         if (null == userName) return new ArrayList<>();
         Set<Long> roleIdSet = userRoleMap.get(userName);
+        if (null == roleIdSet) return new ArrayList<>();
         return new ArrayList<>(roleIdSet);
     }
-
 }

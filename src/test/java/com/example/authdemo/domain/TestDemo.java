@@ -14,11 +14,12 @@ public class TestDemo {
         Set<Long> testSet = new HashSet<>();
         testSet.add(1L);
         testSet.add(2L);
-        testSet.add(3L);
+        System.out.println(testSet.add(3L));
+        System.out.println(testSet.add(3L));
+        testSet.remove(null);
 
         List<Long> newList = new ArrayList<>(testSet);
         newList.set(2,4L);
-        newList = null;
         for (Long num : newList)
             System.out.println(num);
         System.out.println("========");
