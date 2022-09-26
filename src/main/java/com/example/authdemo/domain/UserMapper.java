@@ -95,7 +95,8 @@ public class UserMapper {
             //同步粒度暂定是user
 
             //清除当前的userToken
-            validTokenMap.remove(user.getAuthToken());
+            if (null != user.getAuthToken())
+                validTokenMap.remove(user.getAuthToken());
             //更新新的token
             validTokenMap.put(token, user);
             //更新新的Token和时间
