@@ -14,10 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class UserMapper {
     /** 存储name对应的用户信息，key--用户名，value--对应的用户信息 */
-    Map<String, User> dataMap;
+    private Map<String, User> dataMap;
 
     /** 当前生效的token信息 */
-    Map<String, User> validTokenMap;
+    private Map<String, User> validTokenMap;
 
     private static UserMapper userMapper = new UserMapper();
 
@@ -106,5 +106,14 @@ public class UserMapper {
         return 1;
     }
 
+    /***
+     * 根据token获取指定用户
+     * @param token token信息
+     * @return 用户信息对象，如果有异常则返回null
+     */
+    public User getUserByToken(String token) {
+        if (null == token) return null;
 
+        return validTokenMap.get(token);
+    }
 }
