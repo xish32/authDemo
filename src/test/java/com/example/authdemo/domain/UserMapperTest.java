@@ -31,7 +31,6 @@ public class UserMapperTest {
         assertEquals("345", userMapper.get("enterprise").getAuthToken());
         assertEquals(null, userMapper.getUserByToken("123"));
         assertEquals("enterprise", userMapper.getUserByToken("345").getName());
-
     }
 
 }
