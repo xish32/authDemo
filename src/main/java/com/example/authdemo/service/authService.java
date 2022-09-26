@@ -11,10 +11,8 @@ import com.example.authdemo.util.DateUtil;
 import com.example.authdemo.util.DesUtil;
 import com.example.authdemo.util.StringUtil;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AuthService {
 
@@ -82,11 +80,12 @@ public class AuthService {
         if (null == userName) return AuthResult.PARAMETER_NULL;
 
         try {
-            int res = userMapper.delete(userName);
-            if (res == 1) {
-                return AuthResult.SUCCESS;
+            int userRes = userMapper.delete(userName);
+            if (userRes != 1) {
+                return AuthResult.USER_NOTEXIST;
             }
-            return AuthResult.USER_NOTEXIST;
+            userRoleMapper.delUser(userName);
+            return AuthResult.SUCCESS;
         } catch (Exception ex) {
             ex.printStackTrace();
             return AuthResult.UNKONWN_ERROR;
@@ -187,16 +186,16 @@ public class AuthService {
         if (null == userName)
             throw new AuthException(AuthResult.PARAMETER_NULL, null);
 
-        try {
-            //检查用户是否存在，密码是否正确
-            User curUser = userMapper.get(userName);
-            if (null == curUser)
-                throw new AuthException(AuthResult.USER_NOTEXIST, null);
+        //检查用户是否存在，密码是否正确
+        User curUser = userMapper.get(userName);
+        if (null == curUser)
+            throw new AuthException(AuthResult.USER_NOTEXIST, null);
 
-            String decPassword = DesUtil.decrypt(PASSWORD_KEY, curUser.getPassword());
-            if (!StringUtil.equals(decPassword, password)) {
-                throw new AuthException(AuthResult.INVALID_PASSWORD, null);
-            }
+        String decPassword = DesUtil.decrypt(PASSWORD_KEY, curUser.getPassword());
+        if (!StringUtil.equals(decPassword, password)) {
+            throw new AuthException(AuthResult.INVALID_PASSWORD, null);
+        }
+        try {
 
             //生成新的token
             String newToken = java.util.UUID.randomUUID().toString();
@@ -219,10 +218,11 @@ public class AuthService {
         if (null == authToken) return ;
 
         try {
-            //检查用户是否存在，密码是否正确
+            //检查用户是否存在
             User curUser = userMapper.getUserByToken(authToken);
             if (null == curUser) return;
 
+            userMapper.cleanToken(authToken);
             userMapper.addToken(curUser.getName(), null, new Date(), null);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -238,7 +238,22 @@ public class AuthService {
      * @throws AuthException 异常信息，token已经失效的也会在这里抛出异常
      */
     public boolean checkRole(String authToken, String roleName) throws AuthException {
-        return false;
+        if ((null == authToken) || (null == roleName))
+            throw new AuthException(AuthResult.PARAMETER_NULL, null);
+
+        // 检查角色是否存在
+        Role curRole = roleMapper.get(roleName);
+        if (null == curRole) throw new AuthException(AuthResult.ROLE_NOTEXIST, null);
+
+        //检查用户是否存在
+        User curUser = checkTokenUser(authToken);
+
+        try {
+            return userRoleMapper.hasRoleFromUser(curUser.getName(), curRole.getId());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new AuthException(AuthResult.UNKONWN_ERROR, ex);
+        }
     }
 
 
@@ -250,6 +265,54 @@ public class AuthService {
      * @throws AuthException 异常信息，token已经失效的也会在这里抛出异常
      */
     public List<String> getUserRole(String authToken) throws AuthException {
-        return null;
+        if ((null == authToken))
+            throw new AuthException(AuthResult.PARAMETER_NULL, null);
+
+        //检查用户是否存在
+        User curUser = checkTokenUser(authToken);
+
+        try {
+            List<Long> roleIds = userRoleMapper.getAllRolesFromUser(curUser.getName());
+            List<Long> roleIdToDelete = new ArrayList<>();
+            List<String> roleNameList = new ArrayList<>();
+            for (Long roleId : roleIds) {
+                //要顺便清理
+                String roleName = roleMapper.getRoleNameById(roleId);
+                if (null != roleName) {
+                    roleNameList.add(roleName);
+                } else {
+                    roleIdToDelete.add(roleId);
+                }
+            }
+            userRoleMapper.delMultiRolesFromUser(curUser.getName(), roleIdToDelete);
+
+            return roleNameList;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new AuthException(AuthResult.UNKONWN_ERROR, ex);
+        }
+    }
+
+    private User checkTokenUser(String authToken) throws AuthException {
+        User curUser = userMapper.getUserByToken(authToken);
+        if (null == curUser) throw new AuthException(AuthResult.INVALID_TOKEN, null);
+
+        if (!StringUtil.equals(authToken, curUser.getAuthToken())) {
+            //提供的token的指向不正确，清理token
+            //但是不需要清理userMapper
+            System.out.println("TOKEN指向了错误的用户");
+            userMapper.cleanToken(authToken);
+            throw new AuthException(AuthResult.INVALID_TOKEN, null);
+        }
+
+        //检查token是否过期
+        Date now = new Date();
+        Date expireDate = curUser.getTokenExpireTime();
+        if ((null == expireDate) || (now.after(expireDate))) {
+            userMapper.cleanToken(authToken);
+            userMapper.addToken(curUser.getName(), null, now, null);
+            throw new AuthException(AuthResult.INVALID_TOKEN, null);
+        }
+        return curUser;
     }
 }

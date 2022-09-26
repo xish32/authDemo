@@ -56,14 +56,13 @@ public class UserMapper {
 
         //要删除user中对应的token，否则多余的token可能会积压在内存里一直清理不掉，造成内存泄漏
         User user = dataMap.get(userName);
-        if (null != user) {
-            synchronized(user) {
-                if (null != user.getAuthToken()) {
-                    validTokenMap.remove(user.getAuthToken());
-                }
+        if (null == user) return 0;
+
+        synchronized(user) {
+            if (null != user.getAuthToken()) {
+                validTokenMap.remove(user.getAuthToken());
             }
         }
-
         return dataMap.remove(userName) != null ? 1 : 0;
     }
 
@@ -126,5 +125,16 @@ public class UserMapper {
         if (null == token) return null;
 
         return validTokenMap.get(token);
+    }
+
+    /***
+     * 根据要求清理token，实际上是补救措施
+     * @param authToken
+     * @return 清理掉的token的个数，0表示没有清理
+     */
+    public int cleanToken(String authToken) {
+        if (null == authToken) return 0;
+
+        return validTokenMap.remove(authToken) != null ? 1 : 0;
     }
 }

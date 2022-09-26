@@ -5,6 +5,7 @@ import com.example.authdemo.entity.Role;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -14,11 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RoleMapper {
     Map<String, Role> dataMap;
+    Map<Long, Role> idMap;
 
     private static RoleMapper roleMapper = new RoleMapper();
 
     private RoleMapper() {
         dataMap = new ConcurrentHashMap<>();
+        idMap = new ConcurrentHashMap<>();
     }
 
     public static RoleMapper getInstance() {
@@ -37,7 +40,9 @@ public class RoleMapper {
         if (dataMap.containsKey(roleInfo.getName())) {
             return 0;
         }
+
         dataMap.put(roleInfo.getName(), roleInfo);
+        idMap.put(roleInfo.getId(), roleInfo);
         return 1;
     }
 
@@ -49,6 +54,7 @@ public class RoleMapper {
     public int delete(String roleName) {
         if (null == roleName) return 0;
 
+        idMap.remove(roleName);
         return dataMap.remove(roleName) != null ? 1 : 0;
     }
 
@@ -63,11 +69,12 @@ public class RoleMapper {
 
     /***
      * 根据id清单获取对应的角色对象列表
-     * @param ids
-     * @return 角色对象列表，没有则返回一个空列表
+     * @param id 对应的Id
+     * @return 角色对象列表，没有则返回空
      */
-    public List<Role> getRoles(List<Long> ids) {
-        List<Role> roleList = new ArrayList<>();
-        return roleList;
+    public String getRoleNameById(long id) {
+        Role role = idMap.get(id);
+        if (null == role) return null;
+        return role.getName();
     }
 }

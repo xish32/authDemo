@@ -11,6 +11,16 @@ public class TestDemo {
     @Test
     public void testAdd() {
 
+        Date now = new Date();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        Date after = new Date();
+        System.out.println(now.after(after));
+        System.out.println(after.after(now));
+
         for (int i = 0 ; i < 10 ; i++)
             System.out.println(UUID.randomUUID().toString());
 
