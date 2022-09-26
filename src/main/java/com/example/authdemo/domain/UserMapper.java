@@ -100,7 +100,8 @@ public class UserMapper {
             if (null != user.getAuthToken())
                 validTokenMap.remove(user.getAuthToken());
             //更新新的token
-            validTokenMap.put(token, user);
+            if (null != token)
+                validTokenMap.put(token, user);
             //更新新的Token和时间
             user.setAuthToken(token);
             user.setLastAuthTime(authDate);
