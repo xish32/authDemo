@@ -12,7 +12,6 @@ import com.example.authdemo.util.DesUtil;
 import com.example.authdemo.util.StringUtil;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class AuthService {
 
@@ -161,6 +160,12 @@ public class AuthService {
 
             long roleId = newRole.getId();
 
+            //查用户是否存在
+            User curUser = userMapper.get(userName);
+            if (null == curUser) {
+                return AuthResult.USER_NOTEXIST;
+            }
+
             //先检查该用户-角色信息是否存在
             // 已经存在的，要按照成功来计算
             if (userRoleMapper.hasRoleFromUser(userName, roleId))
@@ -188,12 +193,13 @@ public class AuthService {
 
         //检查用户是否存在，密码是否正确
         User curUser = userMapper.get(userName);
+        //找不到用户，也应该回报用户名密码错误
         if (null == curUser)
-            throw new AuthException(AuthResult.USER_NOTEXIST, null);
+            throw new AuthException(AuthResult.INVALID_USERNAME_PASSWORD, null);
 
         String decPassword = DesUtil.decrypt(PASSWORD_KEY, curUser.getPassword());
         if (!StringUtil.equals(decPassword, password)) {
-            throw new AuthException(AuthResult.INVALID_PASSWORD, null);
+            throw new AuthException(AuthResult.INVALID_USERNAME_PASSWORD, null);
         }
         try {
 

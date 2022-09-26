@@ -8,7 +8,7 @@ public enum AuthResult {
     SUCCESS("000000", "成功"),
     USER_NOTEXIST("000001", "用户不存在"),
     ROLE_NOTEXIST("000002", "角色不存在"),
-    INVALID_PASSWORD("000003", "用户名或密码不正确"),
+    INVALID_USERNAME_PASSWORD("000003", "用户名或密码不正确"),
     INVALID_TOKEN("000004", "TOKEN不正确或已过期"),
     PARAMETER_NULL("000005", "输入参数为空"),
 
