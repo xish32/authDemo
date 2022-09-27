@@ -18,11 +18,11 @@ public class TestDemo {
             throw new RuntimeException(e);
         }
         Date after = new Date();
-        System.out.println(now.after(after));
-        System.out.println(after.after(now));
+//        System.out.println(now.after(after));
+//        System.out.println(after.after(now));
 
-        for (int i = 0 ; i < 10 ; i++)
-            System.out.println(UUID.randomUUID().toString());
+//        for (int i = 0 ; i < 10 ; i++)
+//            System.out.println(UUID.randomUUID().toString());
 
         Set<Long> testSet = new HashSet<>();
         testSet.add(1L);
@@ -32,6 +32,13 @@ public class TestDemo {
         testSet.remove(null);
 
         List<Long> newList = new ArrayList<>(testSet);
+        newList.add(3L);
+        newList.add(2L);
+        newList.add(1L);
+
+        System.out.println("contains All " + testSet.containsAll(newList));
+
+
         newList.set(2,4L);
         for (Long num : newList)
             System.out.println(num);

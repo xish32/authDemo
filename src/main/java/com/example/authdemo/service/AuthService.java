@@ -273,7 +273,7 @@ public class AuthService {
      * @return 返回该用户所有的角色信息，是一个list
      * @throws AuthException 异常信息，token已经失效的也会在这里抛出异常
      */
-    public List<String> getUserRole(String authToken) throws AuthException {
+    public List<String> getUserRoles(String authToken) throws AuthException {
         if ((null == authToken))
             throw new AuthException(AuthResult.PARAMETER_NULL, null);
 
