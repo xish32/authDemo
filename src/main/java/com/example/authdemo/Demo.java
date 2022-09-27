@@ -41,7 +41,7 @@ public class Demo {
             List<String> roleList = authService.getUserRoles(token);
             System.out.println("current roles of enterprise");
             for (String roleName : roleList) {
-                System.out.println("roleName");
+                System.out.println(roleName);
             }
         } catch (AuthException e) {
             e.printStackTrace();

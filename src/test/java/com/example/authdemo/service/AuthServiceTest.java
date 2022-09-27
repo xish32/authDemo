@@ -24,6 +24,7 @@ public class AuthServiceTest {
         authService.delUser("yorktown");
         authService.delUser("hornet");
         authService.delUser("ranger");
+        authService.delUser("wasp");
 
         //恢复基本配置
         authService.setDelayTimeunit(Calendar.HOUR_OF_DAY);
@@ -42,6 +43,7 @@ public class AuthServiceTest {
         authService.delUser("yorktown");
         authService.delUser("hornet");
         authService.delUser("ranger");
+        authService.delUser("wasp");
 
         //恢复基本配置
         authService.setDelayTimeunit(Calendar.HOUR_OF_DAY);
@@ -116,12 +118,12 @@ public class AuthServiceTest {
 
         //授权场景验证
         //场景一：失败授权场景的测试，各种参数不正确
-        checkFailAuthenticate(authService, null, null, AuthResult.PARAMETER_NULL);//各种授权失败的测试
-        checkFailAuthenticate(authService, "enterprise", null, AuthResult.INVALID_USERNAME_PASSWORD);
-        checkFailAuthenticate(authService, "enterprise", "CV-5", AuthResult.INVALID_USERNAME_PASSWORD);
-        checkFailAuthenticate(authService, "ranger", null, AuthResult.INVALID_USERNAME_PASSWORD);
+        AuthServiceUtil.checkFailAuthenticate(authService, null, null, AuthResult.PARAMETER_NULL);//各种授权失败的测试
+        AuthServiceUtil.checkFailAuthenticate(authService, "enterprise", null, AuthResult.INVALID_USERNAME_PASSWORD);
+        AuthServiceUtil.checkFailAuthenticate(authService, "enterprise", "CV-5", AuthResult.INVALID_USERNAME_PASSWORD);
+        AuthServiceUtil.checkFailAuthenticate(authService, "ranger", null, AuthResult.INVALID_USERNAME_PASSWORD);
 
-        checkFailCheckRole(authService, null, "admin", AuthResult.PARAMETER_NULL);
+        AuthServiceUtil.checkFailCheckRole(authService, null, "admin", AuthResult.PARAMETER_NULL);
 
         try {
             //场景二：正常获取令牌然后执行
@@ -132,7 +134,7 @@ public class AuthServiceTest {
             assertEquals(false, authService.checkRole(token, "taskforce"));
 
             //场景三：失败的获取token过后，旧token依旧可以正常使用
-            checkFailAuthenticate(authService, "enterprise", "CV-5", AuthResult.INVALID_USERNAME_PASSWORD);
+            AuthServiceUtil.checkFailAuthenticate(authService, "enterprise", "CV-5", AuthResult.INVALID_USERNAME_PASSWORD);
             assertEquals(true, authService.checkRole(token, "admin"));
             assertEquals(false, authService.checkRole(token, "officer"));
 
@@ -143,8 +145,8 @@ public class AuthServiceTest {
 
             //场景五：给现有token失效后，就有的token变成无效的状态
             authService.invalidate(token);
-            checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
-            checkFailGetRoles(authService, token, AuthResult.INVALID_TOKEN);
+            AuthServiceUtil.checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
+            AuthServiceUtil.checkFailGetRoles(authService, token, AuthResult.INVALID_TOKEN);
 
             //场景六：现有token被顶替后，旧有的token变成无效的状态
             //获得一个新token
@@ -156,8 +158,8 @@ public class AuthServiceTest {
             token = authService.authenticate("enterprise", "CV-6");
             assertEquals(true, authService.checkRole(token, "admin"));
             assertEquals(false, authService.checkRole(token, "officer"));
-            checkFailCheckRole(authService, oldToken, "admin", AuthResult.INVALID_TOKEN);
-            checkFailGetRoles(authService, oldToken, AuthResult.INVALID_TOKEN);
+            AuthServiceUtil.checkFailCheckRole(authService, oldToken, "admin", AuthResult.INVALID_TOKEN);
+            AuthServiceUtil.checkFailGetRoles(authService, oldToken, AuthResult.INVALID_TOKEN);
 
 
             //场景七：验证超时失效的情况
@@ -172,8 +174,8 @@ public class AuthServiceTest {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
-            checkFailGetRoles(authService, token, AuthResult.INVALID_TOKEN);
+            AuthServiceUtil.checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
+            AuthServiceUtil.checkFailGetRoles(authService, token, AuthResult.INVALID_TOKEN);
             authService.setDelayTimeunit(Calendar.HOUR_OF_DAY);
 
             //场景八：如果角色被删除，那么对应的角色信息也定然找不到
@@ -189,8 +191,8 @@ public class AuthServiceTest {
             token = authService.authenticate("enterprise", "CV-6");
             assertEquals(true, authService.checkRole(token, "admin"));
             authService.delUser("enterprise");
-            checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
-            checkFailGetRoles(authService, token, AuthResult.INVALID_TOKEN);
+            AuthServiceUtil.checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
+            AuthServiceUtil.checkFailGetRoles(authService, token, AuthResult.INVALID_TOKEN);
 
             //场景十：这里允许空密码的用户登录
             String waspToken = authService.authenticate("wasp", null);
@@ -218,7 +220,7 @@ public class AuthServiceTest {
 
         //根据代码可以知道，这部分逻辑实际上和checkRoles是共用部分代码的
         //因此token失效的测试用例可以共用，已经在之前的场景中验证过了
-        checkFailGetRoles(authService, null, AuthResult.PARAMETER_NULL);
+        AuthServiceUtil.checkFailGetRoles(authService, null, AuthResult.PARAMETER_NULL);
 
         try {
             //授权获取token
@@ -266,62 +268,5 @@ public class AuthServiceTest {
         assertEquals(true, expSets.containsAll(roleList));
     }
 
-    /***
-     * 授权失败场景的验证工具类
-     * @param authService
-     * @param username
-     * @param password
-     * @param expectedRes
-     */
-    private void checkFailAuthenticate(AuthService authService,
-                                       String username,
-                                       String password,
-                                       AuthResult expectedRes) {
-        try {
-            authService.authenticate(username, password);
-            fail();
-        } catch (AuthException ex) {
-            assertEquals(expectedRes.getRetCode(), ex.getCode());
-            assertEquals(expectedRes.getRetMsg(), ex.getMsg());
-        }
-    }
-
-    /**
-     *
-     * @param authService
-     * @param token
-     * @param roleName
-     * @param expectedRes
-     */
-    private void checkFailCheckRole(AuthService authService,
-                                    String token,
-                                    String roleName,
-                                    AuthResult expectedRes) {
-        try {
-            authService.checkRole(token, roleName);
-            fail();
-        } catch (AuthException ex) {
-            assertEquals(expectedRes.getRetCode(), ex.getCode());
-            assertEquals(expectedRes.getRetMsg(), ex.getMsg());
-        }
-    }
-
-    /***
-     * 检查getRoles的功能的工具类
-     * @param authService
-     * @param token
-     * @param expectedRes
-     */
-    private void checkFailGetRoles(AuthService authService,
-                                   String token,
-                                   AuthResult expectedRes) {
-        try {
-            authService.getUserRoles(token);
-            fail();
-        } catch (AuthException ex) {
-            assertEquals(expectedRes.getRetCode(), ex.getCode());
-            assertEquals(expectedRes.getRetMsg(), ex.getMsg());
-        }
-    }
 
 }
