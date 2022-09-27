@@ -186,9 +186,8 @@ public class AuthServiceConcurrentTest {
         }
 
 
-        String token = null;
         try {
-            token = authServiceAll.authenticate("enterprise", "CV-6");
+            String token = authServiceAll.authenticate("enterprise", "CV-6");
             List<String> roleNameList = authServiceAll.getUserRoles(token);
             AuthServiceUtil.checkList(roleNameList, "admin", "officer");
         } catch (AuthException e) {
