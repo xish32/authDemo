@@ -1,7 +1,9 @@
 package com.example.authdemo.service;
 
 import com.example.authdemo.constant.AuthResult;
+import com.example.authdemo.domain.RoleMapper;
 import com.example.authdemo.domain.UserMapper;
+import com.example.authdemo.domain.UserRoleMapper;
 import com.example.authdemo.entity.User;
 import com.example.authdemo.exception.AuthException;
 import org.junit.After;
@@ -12,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -146,5 +149,66 @@ public class AuthServiceConcurrentTest {
 
         assertEquals(0, hasCount);
     }
+
+    @Test
+    public void testConcurrentUserRole() throws ExecutionException, InterruptedException {
+        AuthService authServiceAll = AuthService.getInstance();
+        authServiceAll.grantRoleToUser("enterprise", "admin");
+        authServiceAll.grantRoleToUser("enterprise", "officer");
+
+        //场景三：验证多个线程并发创建角色，新增角色后删除原角色，检查最后剩余的角色信息
+        AtomicInteger countNum = new AtomicInteger(1);
+        Callable newTokenCall = new Callable() {
+            @Override
+            public String call() throws Exception {
+                AuthService authService = AuthService.getInstance();
+                String roleName = "test" + countNum.getAndIncrement();
+                authService.addRole(roleName);
+                authService.grantRoleToUser("enterprise", roleName);
+                authService.delRole(roleName);
+
+                return roleName;
+            }
+        };
+        FutureTask futureTasks[] = new FutureTask[10];
+        for (int i = 0 ; i < futureTasks.length ; i++) {
+            futureTasks[i] = new FutureTask(newTokenCall);
+        }
+
+        for (FutureTask task : futureTasks) {
+            task.run();
+        }
+
+        List<String> roleNames = new ArrayList<>();
+        for (FutureTask task : futureTasks) {
+            String curRoleName = (String)task.get();
+            roleNames.add(curRoleName);
+        }
+
+
+        String token = null;
+        try {
+            token = authServiceAll.authenticate("enterprise", "CV-6");
+            List<String> roleNameList = authServiceAll.getUserRoles(token);
+            AuthServiceUtil.checkList(roleNameList, "admin", "officer");
+        } catch (AuthException e) {
+            fail();
+        }
+
+
+
+        for (String roleName : roleNames) {
+            RoleMapper roleMapper = RoleMapper.getInstance();
+            assertEquals(null, roleMapper.get(roleName));
+        }
+
+        List<Long> idList = UserRoleMapper.getInstance().getAllRolesFromUser("enterprise");
+
+
+        assertEquals(2, idList.size());
+
+
+    }
+
 
 }

@@ -230,32 +230,32 @@ public class AuthServiceTest {
 
             //场景一：正常功能验证
             roleList = authService.getUserRoles(token);
-            checkList(roleList, "admin");
+            AuthServiceUtil.checkList(roleList, "admin");
 
             //场景二：添加几个新角色，能够正常展示
             authService.grantRoleToUser("enterprise", "officer");
             authService.grantRoleToUser("enterprise", "pilot");
 
-            checkList(authService.getUserRoles(token), "admin", "officer", "pilot");
+            AuthServiceUtil.checkList(authService.getUserRoles(token), "admin", "officer", "pilot");
 
             //场景三：删除其中一个角色，能够正常把相关用户的信息都删除
             authService.grantRoleToUser("hornet", "pilot");
             String hToken = authService.authenticate("hornet", "CV-8");
-            checkList(authService.getUserRoles(hToken), "officer", "pilot");
-            checkList(authService.getUserRoles(token), "admin", "officer", "pilot");
+            AuthServiceUtil.checkList(authService.getUserRoles(hToken), "officer", "pilot");
+            AuthServiceUtil.checkList(authService.getUserRoles(token), "admin", "officer", "pilot");
 
             authService.delRole("pilot");
-            checkList(authService.getUserRoles(hToken), "officer");
-            checkList(authService.getUserRoles(token), "admin", "officer");
+            AuthServiceUtil.checkList(authService.getUserRoles(hToken), "officer");
+            AuthServiceUtil.checkList(authService.getUserRoles(token), "admin", "officer");
 
             //场景四：无角色的用户，返回一个空队列
             authService.delRole("officer");
-            checkList(authService.getUserRoles(hToken));
+            AuthServiceUtil.checkList(authService.getUserRoles(hToken));
 
             //场景五：新增被删除的同名角色，不会影响到数据
             authService.addRole("officer");
             authService.addRole("pilot");
-            checkList(authService.getUserRoles(token), "admin");
+            AuthServiceUtil.checkList(authService.getUserRoles(token), "admin");
             //到数据段验证下是不是清理掉了
             List<Long> eIdList = UserRoleMapper.getInstance().getAllRolesFromUser("enterprise");
             assertEquals(1, eIdList.size());
@@ -265,12 +265,5 @@ public class AuthServiceTest {
             fail();
         }
     }
-
-    private void checkList(List<String> roleList, String ... expected) {
-        assertEquals(expected.length, roleList.size());
-        Set<String> expSets = Arrays.stream(expected).collect(Collectors.toSet());
-        assertEquals(true, expSets.containsAll(roleList));
-    }
-
 
 }

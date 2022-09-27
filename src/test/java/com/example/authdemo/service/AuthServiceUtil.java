@@ -3,6 +3,11 @@ package com.example.authdemo.service;
 import com.example.authdemo.constant.AuthResult;
 import com.example.authdemo.exception.AuthException;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -63,6 +68,12 @@ public class AuthServiceUtil {
             assertEquals(expectedRes.getRetCode(), ex.getCode());
             assertEquals(expectedRes.getRetMsg(), ex.getMsg());
         }
+    }
+
+    public static void checkList(List<String> roleList, String ... expected) {
+        assertEquals(expected.length, roleList.size());
+        Set<String> expSets = Arrays.stream(expected).collect(Collectors.toSet());
+        assertEquals(true, expSets.containsAll(roleList));
     }
 
 }
