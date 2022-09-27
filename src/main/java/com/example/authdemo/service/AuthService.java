@@ -15,10 +15,13 @@ import java.util.*;
 
 public class AuthService {
 
-    private final static String ENCRYPT_KEY = "20220926";
+    /** 密码加密用的秘钥 */
+    private String encryptKey = "20220926";
 
-    private final static int DELAY_TIMES = 2;
-    private final static int DELAY_TIMEUNIT = Calendar.HOUR_OF_DAY;
+    /** 延迟时间 */
+    private int delayTimes = 2;
+    /** 延迟时间的单位 */
+    private int delayTimeunit = Calendar.HOUR_OF_DAY;
 
 
     private RoleMapper roleMapper;
@@ -59,7 +62,7 @@ public class AuthService {
         //构建新用户
         try {
             User newUser = new User(userName);
-            newUser.setPassword(DesUtil.encrypt(ENCRYPT_KEY, password));
+            newUser.setPassword(DesUtil.encrypt(encryptKey, password));
 
             userMapper.insert(newUser);
             return AuthResult.SUCCESS;
@@ -197,7 +200,7 @@ public class AuthService {
         if (null == curUser)
             throw new AuthException(AuthResult.INVALID_USERNAME_PASSWORD, null);
 
-        String decPassword = DesUtil.decrypt(ENCRYPT_KEY, curUser.getPassword());
+        String decPassword = DesUtil.decrypt(encryptKey, curUser.getPassword());
         if (!StringUtil.equals(decPassword, password)) {
             throw new AuthException(AuthResult.INVALID_USERNAME_PASSWORD, null);
         }
@@ -206,7 +209,7 @@ public class AuthService {
             //生成新的token
             String newToken = java.util.UUID.randomUUID().toString();
             Date updateTime = new Date();
-            Date expireTime = DateUtil.getAddTime(updateTime, DELAY_TIMES, DELAY_TIMEUNIT);
+            Date expireTime = DateUtil.getAddTime(updateTime, delayTimes, delayTimeunit);
             userMapper.addToken(userName, newToken, updateTime, expireTime);
             return newToken;
         } catch (Exception ex) {
@@ -321,4 +324,35 @@ public class AuthService {
         }
         return curUser;
     }
+
+    public String getEncryptKey() {
+        return encryptKey;
+    }
+
+    /***
+     * 设置加密秘钥
+     * @param encryptKey 加密密钥
+     */
+    public void setEncryptKey(String encryptKey) {
+        //小于8的数据是无效的
+        if (encryptKey.length() >= 8)
+            this.encryptKey = encryptKey;
+    }
+
+    public int getDelayTimes() {
+        return delayTimes;
+    }
+
+    public void setDelayTimes(int delayTimes) {
+        this.delayTimes = delayTimes;
+    }
+
+    public int getDelayTimeunit() {
+        return delayTimeunit;
+    }
+
+    public void setDelayTimeunit(int delayTimeunit) {
+        this.delayTimeunit = delayTimeunit;
+    }
+
 }
