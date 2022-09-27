@@ -231,8 +231,12 @@ public class AuthService {
             User curUser = userMapper.getUserByToken(authToken);
             if (null == curUser) return;
 
-            userMapper.cleanToken(authToken);
-            userMapper.addToken(curUser.getName(), null, new Date(), null);
+            // 不需要在给userMapper里的数据做删除，在后续操作过程中删除即可
+            // 要避免可能的同步问题
+            //synchronized (curUser) {
+                userMapper.cleanToken(authToken);
+                //userMapper.addToken(curUser.getName(), null, new Date(), null);
+            //}
         } catch (Exception ex) {
             ex.printStackTrace();
         }

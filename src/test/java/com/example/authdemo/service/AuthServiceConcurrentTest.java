@@ -65,6 +65,7 @@ public class AuthServiceConcurrentTest {
 
     @Test
     public void testConcurrentToken() throws ExecutionException, InterruptedException {
+        //场景一：验证多个线程并发请求token，最后只有一个有效token，其余均无效
         Callable newTokenCall = new Callable() {
             @Override
             public String call() throws Exception {
@@ -95,16 +96,55 @@ public class AuthServiceConcurrentTest {
             UserMapper userMapper = UserMapper.getInstance();
             User curUser = userMapper.getUserByToken(token);
             if (null != curUser) {
+                assertEquals(token, curUser.getAuthToken());
                 hasCount++;
             }
         }
 
 
         assertEquals(1, hasCount);
-
-
     }
 
+    @Test
+    public void testConcurrentTokenInvalidate() throws ExecutionException, InterruptedException {
+        //场景二：验证多个线程并发请求token（含下线），最后所有token均失效
+        boolean isFirst = false;
+        Callable newTokenCall = new Callable() {
+            @Override
+            public String call() throws Exception {
+                AuthService authService = AuthService.getInstance();
+                String token = authService.authenticate("enterprise", "CV-6");
+                authService.invalidate(token);
+                System.out.println(Thread.currentThread().getName() + " get token " + token);
+                return token;
+            }
+        };
+        FutureTask futureTasks[] = new FutureTask[10];
+        for (int i = 0 ; i < futureTasks.length ; i++) {
+            futureTasks[i] = new FutureTask(newTokenCall);
+        }
 
+        for (FutureTask task : futureTasks) {
+            task.run();
+        }
+
+        List<String> tokens = new ArrayList<>();
+        for (FutureTask task : futureTasks) {
+            String curToken = (String)task.get();
+            tokens.add(curToken);
+        }
+
+        int hasCount = 0;
+        for (String token : tokens) {
+            UserMapper userMapper = UserMapper.getInstance();
+            User curUser = userMapper.getUserByToken(token);
+            if (null != curUser) {
+                hasCount++;
+            }
+        }
+
+
+        assertEquals(0, hasCount);
+    }
 
 }
