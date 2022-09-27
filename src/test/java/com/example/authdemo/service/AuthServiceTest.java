@@ -1,6 +1,7 @@
 package com.example.authdemo.service;
 
 import com.example.authdemo.constant.AuthResult;
+import com.example.authdemo.domain.UserRoleMapper;
 import com.example.authdemo.exception.AuthException;
 import org.junit.After;
 import org.junit.Before;
@@ -255,6 +256,9 @@ public class AuthServiceTest {
             authService.addRole("officer");
             authService.addRole("pilot");
             checkList(authService.getUserRoles(token), "admin");
+            //到数据段验证下是不是清理掉了
+            List<Long> eIdList = UserRoleMapper.getInstance().getAllRolesFromUser("enterprise");
+            assertEquals(1, eIdList.size());
 
         } catch (AuthException e) {
             e.printStackTrace();
