@@ -54,8 +54,11 @@ public class RoleMapper {
     public int delete(String roleName) {
         if (null == roleName) return 0;
 
-        idMap.remove(roleName);
-        return dataMap.remove(roleName) != null ? 1 : 0;
+        Role curRole = dataMap.get(roleName);
+        if (null == curRole) return 0;
+
+        idMap.remove(curRole.getId());
+        return dataMap.remove(curRole.getName()) != null ? 1 : 0;
     }
 
     /**

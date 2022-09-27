@@ -86,11 +86,14 @@ public class AuthServiceTest {
         assertEquals(AuthResult.SUCCESS, authService.addUser("enterprise", "CV-6"));
         assertEquals(AuthResult.SUCCESS, authService.addUser("yorktown", "CV-5"));
         assertEquals(AuthResult.SUCCESS, authService.addUser("hornet", "CV-8"));
+        assertEquals(AuthResult.SUCCESS, authService.addUser("wasp", null));
+
         assertEquals(AuthResult.SUCCESS, authService.addRole("admin"));
         assertEquals(AuthResult.SUCCESS, authService.addRole("officer"));
         //加角色
         assertEquals(AuthResult.SUCCESS, authService.grantRoleToUser("enterprise", "admin"));
         assertEquals(AuthResult.SUCCESS, authService.grantRoleToUser("hornet", "officer"));
+        assertEquals(AuthResult.SUCCESS, authService.grantRoleToUser("wasp", "admin"));
 
         //授权场景验证
         //场景一：失败授权场景的测试，各种参数不正确
@@ -122,6 +125,7 @@ public class AuthServiceTest {
             //场景五：给现有token失效后，就有的token变成无效的状态
             authService.invalidate(token);
             checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
+            checkFailGetRoles(authService, token, AuthResult.INVALID_TOKEN);
 
             //场景六：现有token被顶替后，旧有的token变成无效的状态
             //获得一个新token
@@ -134,6 +138,7 @@ public class AuthServiceTest {
             assertEquals(true, authService.checkRole(token, "admin"));
             assertEquals(false, authService.checkRole(token, "officer"));
             checkFailCheckRole(authService, oldToken, "admin", AuthResult.INVALID_TOKEN);
+            checkFailGetRoles(authService, oldToken, AuthResult.INVALID_TOKEN);
 
 
             //场景七：验证超时失效的情况
@@ -149,6 +154,7 @@ public class AuthServiceTest {
                 e.printStackTrace();
             }
             checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
+            checkFailGetRoles(authService, token, AuthResult.INVALID_TOKEN);
             authService.setDelayTimeunit(Calendar.HOUR_OF_DAY);
 
             //场景八：如果角色被删除，那么对应的角色信息也定然找不到
@@ -165,7 +171,11 @@ public class AuthServiceTest {
             assertEquals(true, authService.checkRole(token, "admin"));
             authService.delUser("enterprise");
             checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
+            checkFailGetRoles(authService, token, AuthResult.INVALID_TOKEN);
 
+            //场景十：这里允许空密码的用户登录
+            String waspToken = authService.authenticate("wasp", null);
+            assertEquals(true, authService.checkRole(waspToken, "admin"));
         } catch (AuthException e) {
             fail();
         }
@@ -181,82 +191,52 @@ public class AuthServiceTest {
         assertEquals(AuthResult.SUCCESS, authService.addUser("hornet", "CV-8"));
         assertEquals(AuthResult.SUCCESS, authService.addRole("admin"));
         assertEquals(AuthResult.SUCCESS, authService.addRole("officer"));
-        assertEquals(AuthResult.SUCCESS, authService.addRole("regular"));
-        assertEquals(AuthResult.SUCCESS, authService.addRole("conscript"));
+        assertEquals(AuthResult.SUCCESS, authService.addRole("maintainer"));
+        assertEquals(AuthResult.SUCCESS, authService.addRole("pilot"));
         //加角色
         assertEquals(AuthResult.SUCCESS, authService.grantRoleToUser("enterprise", "admin"));
         assertEquals(AuthResult.SUCCESS, authService.grantRoleToUser("hornet", "officer"));
+
+        //根据代码可以知道，这部分逻辑实际上和checkRoles是共用部分代码的
+        //因此token失效的测试用例可以共用，已经在之前的场景中验证过了
+        checkFailGetRoles(authService, null, AuthResult.PARAMETER_NULL);
 
         try {
             //授权获取token
             String token = authService.authenticate("enterprise", "CV-6");
             List<String> roleList;
+
+            //场景一：正常功能验证
             roleList = authService.getUserRoles(token);
             checkList(roleList, "admin");
 
-//            assertEquals(true, authService.checkRole(token, "admin"));
-//            assertEquals(false, authService.checkRole(token, "officer"));
-//            //不存在的角色也属于false
-//            assertEquals(false, authService.checkRole(token, "taskforce"));
-//
-//            //场景三：失败的获取token过后，旧token依旧可以正常使用
-//            checkFailAuthenticate(authService, "enterprise", "CV-5", AuthResult.INVALID_USERNAME_PASSWORD);
-//            assertEquals(true, authService.checkRole(token, "admin"));
-//            assertEquals(false, authService.checkRole(token, "officer"));
-//
-//            //场景四：失败的失效操作后，旧有token依旧可以正常使用
-//            authService.invalidate("doTest");
-//            assertEquals(true, authService.checkRole(token, "admin"));
-//            assertEquals(false, authService.checkRole(token, "officer"));
-//
-//            //场景五：给现有token失效后，就有的token变成无效的状态
-//            authService.invalidate(token);
-//            checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
-//
-//            //场景六：现有token被顶替后，旧有的token变成无效的状态
-//            //获得一个新token
-//            token = authService.authenticate("enterprise", "CV-6");
-//            assertEquals(true, authService.checkRole(token, "admin"));
-//            assertEquals(false, authService.checkRole(token, "officer"));
-//            //尝试新拉取一个token后的生效失效情况
-//            String oldToken = token;
-//            token = authService.authenticate("enterprise", "CV-6");
-//            assertEquals(true, authService.checkRole(token, "admin"));
-//            assertEquals(false, authService.checkRole(token, "officer"));
-//            checkFailCheckRole(authService, oldToken, "admin", AuthResult.INVALID_TOKEN);
-//
-//
-//            //场景七：验证超时失效的情况
-//            authService.setDelayTimeunit(Calendar.SECOND);
-//            authService.setDelayTimes(2);
-//            token = authService.authenticate("enterprise", "CV-6");
-//            assertEquals(true, authService.checkRole(token, "admin"));
-//            assertEquals(false, authService.checkRole(token, "officer"));
-//
-//            try {
-//                Thread.sleep(2050); //稍微拉长点时间
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
-//            authService.setDelayTimeunit(Calendar.HOUR_OF_DAY);
-//
-//            //场景八：如果角色被删除，那么对应的角色信息也定然找不到
-//            token = authService.authenticate("hornet", "CV-8");
-//            assertEquals(true, authService.checkRole(token, "officer"));
-//            authService.delRole("officer");
-//            assertEquals(false, authService.checkRole(token, "officer"));
-//            //即使后面加了同名的角色，也不行
-//            authService.addRole("officer");
-//            assertEquals(false, authService.checkRole(token, "officer"));
-//
-//            //场景九：如果用户被删除，那么对应的token会自动失效
-//            token = authService.authenticate("enterprise", "CV-6");
-//            assertEquals(true, authService.checkRole(token, "admin"));
-//            authService.delUser("enterprise");
-//            checkFailCheckRole(authService, token, "admin", AuthResult.INVALID_TOKEN);
+            //场景二：添加几个新角色，能够正常展示
+            authService.grantRoleToUser("enterprise", "officer");
+            authService.grantRoleToUser("enterprise", "pilot");
+
+            checkList(authService.getUserRoles(token), "admin", "officer", "pilot");
+
+            //场景三：删除其中一个角色，能够正常把相关用户的信息都删除
+            authService.grantRoleToUser("hornet", "pilot");
+            String hToken = authService.authenticate("hornet", "CV-8");
+            checkList(authService.getUserRoles(hToken), "officer", "pilot");
+            checkList(authService.getUserRoles(token), "admin", "officer", "pilot");
+
+            authService.delRole("pilot");
+            checkList(authService.getUserRoles(hToken), "officer");
+            checkList(authService.getUserRoles(token), "admin", "officer");
+
+            //场景四：无角色的用户，返回一个空队列
+            authService.delRole("officer");
+            checkList(authService.getUserRoles(hToken));
+
+            //场景五：新增被删除的同名角色，不会影响到数据
+            authService.addRole("officer");
+            authService.addRole("pilot");
+            checkList(authService.getUserRoles(token), "admin");
 
         } catch (AuthException e) {
+            e.printStackTrace();
             fail();
         }
     }
@@ -300,6 +280,24 @@ public class AuthServiceTest {
                                     AuthResult expectedRes) {
         try {
             authService.checkRole(token, roleName);
+            fail();
+        } catch (AuthException ex) {
+            assertEquals(expectedRes.getRetCode(), ex.getCode());
+            assertEquals(expectedRes.getRetMsg(), ex.getMsg());
+        }
+    }
+
+    /***
+     * 检查getRoles的功能的工具类
+     * @param authService
+     * @param token
+     * @param expectedRes
+     */
+    private void checkFailGetRoles(AuthService authService,
+                                   String token,
+                                   AuthResult expectedRes) {
+        try {
+            authService.getUserRoles(token);
             fail();
         } catch (AuthException ex) {
             assertEquals(expectedRes.getRetCode(), ex.getCode());
