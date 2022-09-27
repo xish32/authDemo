@@ -3,6 +3,7 @@ package com.example.authdemo.service;
 import com.example.authdemo.constant.AuthResult;
 import com.example.authdemo.exception.AuthException;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
@@ -12,6 +13,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class AuthServiceTest {
+
+    @Before
+    public void init() {
+        //清理现场
+        AuthService authService = AuthService.getInstance();
+        authService.delRole("admin");
+        authService.delRole("officer");
+        authService.delUser("enterprise");
+        authService.delUser("yorktown");
+        authService.delUser("hornet");
+        authService.delUser("ranger");
+
+        //恢复基本配置
+        authService.setDelayTimeunit(Calendar.HOUR_OF_DAY);
+        authService.setDelayTimes(2);
+        authService.setEncryptKey("12345678");
+    }
+
 
     @After
     public void teardown() {

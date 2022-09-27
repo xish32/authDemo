@@ -52,12 +52,15 @@
 
 + 角色实体存储在roleMap中，key为name角色名，value为Role这个对象实例  
 + 需要有一个atomicLong当做自增序列对象来给新增用户授予ID  
++ 设置id的主要目的是为了区分当前角色，和如果把当前角色删除后，又新增的角色
+  - 如果角色被删除了，拥有该角色的所有用户的对应角色也应该消失，相当于级联删除
 + 调用类RoleMapper，单例
 + 如果后续需要持久化，可以用id字段作为主键  
 
 | 容器名 | 类型 | 说明 |  
 | ------ | ------ | ------ |  
 | dataMap | Map<String, Role> | 存储name对应的角色信息，key--角色名，value--对应的角色信息 |  
+| idMap | Map<Long, Role> | 存储id对应的角色信息，key--角色id，value--对应的角色信息 |  
 
 
 3. 用户-角色之间的关系  
@@ -65,8 +68,9 @@
   - 用户对角色  
   - 角色对用户  
 + 根据现有的需求来看，角色对用户的关系可以不维护  
+  - 毕竟一般来说，用户多而角色少，角色表中维护用户关系会占用很多额外的空间
   - 删除角色的时候，可以延迟删除对应用户中的角色信息  
-  - 每次查询用户角色的时候，去roleMap中做一下查询即可  
+  - 每次查询用户角色的时候，去roleMap中查询对应roleId的角色是否还存在，不存在的话，从用户角色信息中剔除  
 
 | 容器名 | 类型 | 说明 |  
 | ------ | ------ | ------ |  
@@ -85,53 +89,62 @@
   - userName, 指代用户名
   - password, 指代密码
   - 异常情况：1. 用户已存在；2. 其他异常情况
+  
 + 删除用户delUser，接口原型delUser(String userName)
   - userName, 指代用户名
   - 异常情况：1. 用户不存在
+  
 + 创建角色addRole，接口原型addRole(String roleName)
   - roleName，指代角色名
   - 异常情况：1. 角色已存在
+  
 + 删除角色delRole，接口原型delRole(String roleName)
   - roleName，指代角色名
   - 异常情况：1. 角色不存在
+  
 + 给用户授角色grantRoleToUser，接口原型grantRoleToUser(String userName, String roleName)
   - userName, 指代用户名
   - roleName，指代角色名
   - 如果用户已经拥有该角色的信息，需要正常返回
   - 异常情况：1. 用户不存在；2. 角色不存在
+  
 + 授权authenticate，接口原型authenticate(String userName, String password)
   - userName，指代用户名
   - password，指代密码
   - 返回一个设定好的authToken，暂定UUID
   - 异常情况：1. 用户名或密码不正确
+  
 + 取消授权invalidate，接口原型invalidate(String authToken);
   - authToken，指代token的名字
   - 异常情况：token不正确
-  - returns nothing, the token is no longer valid after the call.  Handles correctly the case of invalid token given as input
+
 + 验证角色checkRole，接口原型checkRole(String authToken，String roleName)
   - authToken，指代token
   - roleName，指代角色名
   - 返回一个true或false的值
-  - returns true if the user, identified by the token, belongs to the role, false otherwise; error if token is invalid expired etc.
+
 + 查所有角色getUserRole，接口原型getUserRole(String authToken)
   - authToken，指代token
   - 返回该用户所有的角色信息
   - 异常情况：1. token异常
-  - returns all roles for the user, error if token is invalid.
 
 
 
 
 ## 调用逻辑设计  
-主要分三层
+目前是分了主要分的数据层和接口层
++ 数据层包括之前提到的RoleMapper、UserMapper和UserRoleMapper，位于domain包下
++ 接口层即AuthService，位于service包下
 
+## 返回码
++ 000000 成功  
++ 000001 用户不存在  
++ 000002 角色不存在  
++ 000003 用户名或密码不正确  
++ 000004 TOKEN不正确或已过期  
++ 000005 输入参数为空  
 
-## 测试用数据
-| 用户 | 密码 | 角色 |  
-| ------ | ------ | ------ |  
-| enterprise | CV-6 | admin |  
-| yorktown | CV-5 |  |  
-| hornet | CV-8 | officer |  
+## 测试场景
 
 1. 基本逻辑验证
 + 用户-角色的增删查功能
@@ -154,4 +167,6 @@
 + 场景三：删除其中一个角色，能够正常把相关用户的信息都删除
 + 场景四：无角色的用户，返回一个空队列
 + 场景五：新增被删除的同名角色，不会影响到数据
+
+4. 并发场景的验证
 

@@ -9,10 +9,7 @@ import javax.crypto.SecretKeyFactory;
 
 import javax.crypto.spec.DESKeySpec;
 
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.IvParameterSpec;
-import java.io.*;
 import java.util.Base64;
 
 /**
